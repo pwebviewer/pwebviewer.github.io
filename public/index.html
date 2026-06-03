@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PortableWeb — Self-contained interactive documents</title>
+  <meta name="description" content="PortableWeb is an open file format for self-contained, sandboxed, interactive documents. Like PDF, but interactive. Like a webpage, but a file you own.">
+
+  <meta property="og:title" content="PortableWeb">
+  <meta property="og:description" content="An open file format for self-contained, sandboxed, interactive documents. Like PDF, but interactive.">
+  <meta property="og:url" content="https://portableweb.org">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+
+  <style>
+    :root {
+      --ink:           #1a1714;
+      --ink-soft:      #3a342d;
+      --paper:         #f4ede0;
+      --paper-shadow:  #ebe2d0;
+      --paper-darker:  #e1d6c1;
+      --accent:        #b8390e;
+      --accent-soft:   #d8754a;
+      --rule:          #1a1714;
+      --muted:         #756b5e;
+      --muted-soft:    #9a907f;
+      --serif:         ui-serif, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", "Droid Serif", Times, "Source Serif Pro", serif;
+      --sans:          ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      --mono:          ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink:           #f0e6d2;
+        --ink-soft:      #cfc4ad;
+        --paper:         #14110e;
+        --paper-shadow:  #1f1a14;
+        --paper-darker:  #2a241c;
+        --accent:        #e8835a;
+        --accent-soft:   #b8390e;
+        --rule:          #f0e6d2;
+        --muted:         #8a8170;
+        --muted-soft:    #5a5246;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: 18px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-image:
+        radial-gradient(at 15% 25%, rgba(0,0,0,0.025) 0%, transparent 50%),
+        radial-gradient(at 85% 75%, rgba(0,0,0,0.025) 0%, transparent 50%);
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid currentColor;
+      transition: opacity 0.15s ease;
+    }
+    a:hover { opacity: 0.7; }
+
+    code, pre {
+      font-family: var(--mono);
+      font-size: 0.85em;
+    }
+
+    /* ---------- Layout ---------- */
+
+    .wrap {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 clamp(1.25rem, 4vw, 2.5rem);
+    }
+
+    /* ---------- Header ---------- */
+
+    header.site {
+      padding: 2rem 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .mark {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--ink);
+      border-bottom: none;
+    }
+
+    .mark-icon {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      border-radius: 5px;
+    }
+
+    nav.site {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    nav.site a {
+      color: var(--muted);
+      border-bottom: none;
+    }
+    nav.site a:hover { color: var(--ink); }
+
+    /* ---------- Hero ---------- */
+
+    .hero {
+      padding: clamp(3rem, 10vh, 7rem) 0 clamp(3rem, 8vh, 5rem);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.8rem;
+      border: 1px solid var(--rule);
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink);
+      margin-bottom: 2rem;
+    }
+
+    .status::before {
+      content: "";
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2.4s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.4; }
+    }
+
+    h1.hero-title {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-style: italic;
+      font-size: clamp(2.75rem, 8vw, 5rem);
+      line-height: 1.02;
+      letter-spacing: -0.025em;
+      margin: 0 0 1.5rem;
+      max-width: 12ch;
+    }
+
+    h1.hero-title .accent { color: var(--accent); }
+
+    .hero-lede {
+      font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+      line-height: 1.5;
+      max-width: 36em;
+      margin: 0 0 2.5rem;
+      color: var(--ink-soft);
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.3rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid var(--ink);
+      color: var(--ink);
+      background: transparent;
+      border-bottom: 1px solid var(--ink);
+      transition: all 0.18s ease;
+    }
+    .btn:hover { background: var(--ink); color: var(--paper); opacity: 1; }
+
+    .btn.primary { background: var(--ink); color: var(--paper); }
+    .btn.primary:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+
+    /* ---------- Section primitives ---------- */
+
+    section.block {
+      padding: clamp(3rem, 7vh, 5rem) 0;
+      border-top: 1px solid var(--rule);
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 24px; height: 1px;
+      background: var(--muted);
+    }
+
+    h2 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-style: italic;
+      font-size: clamp(1.85rem, 4vw, 2.5rem);
+      line-height: 1.15;
+      letter-spacing: -0.015em;
+      margin: 0 0 1.5rem;
+      max-width: 22ch;
+    }
+
+    h3 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 1.25rem;
+      margin: 0 0 0.5rem;
+      color: var(--ink);
+    }
+
+    p { margin: 0 0 1rem; max-width: 36em; }
+
+    /* ---------- Anatomy diagram ---------- */
+
+    .anatomy {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      margin: 2rem 0 1rem;
+      border: 1px solid var(--rule);
+      background: var(--paper-shadow);
+      max-width: 580px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+
+    .anatomy-row {
+      display: grid;
+      grid-template-columns: 14ch 1fr;
+      gap: 1rem;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--rule);
+      align-items: baseline;
+    }
+    .anatomy-row:last-child { border-bottom: none; }
+
+    .anatomy-row.header {
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.5rem 1.25rem;
+    }
+
+    .anatomy-row .filename { color: var(--ink); font-weight: 600; }
+    .anatomy-row .filename .req { color: var(--accent); font-weight: 400; }
+    .anatomy-row .desc { color: var(--muted); font-family: var(--serif); font-size: 1rem; line-height: 1.4; }
+
+    .anatomy-row.header .filename,
+    .anatomy-row.header .desc { color: var(--paper); font-family: var(--mono); font-size: 0.65rem; }
+
+    /* ---------- Pillars ---------- */
+
+    .pillars {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .pillar h3::before {
+      content: "";
+      display: block;
+      width: 36px;
+      height: 1px;
+      background: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .pillar p { color: var(--ink-soft); font-size: 0.95rem; }
+
+    /* ---------- Use cases ---------- */
+
+    .use-cases {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--rule);
+      border: 1px solid var(--rule);
+      margin-top: 2rem;
+    }
+
+    .use-case {
+      background: var(--paper);
+      padding: 1.5rem 1.25rem;
+    }
+
+    .use-case .num {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .use-case h3 { font-size: 1.1rem; font-style: italic; }
+    .use-case p { font-size: 0.9rem; color: var(--ink-soft); margin: 0; }
+
+    /* ---------- Comparison ---------- */
+
+    .comparison {
+      margin-top: 2rem;
+      overflow-x: auto;
+    }
+
+    .comparison table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      min-width: 540px;
+    }
+
+    .comparison th, .comparison td {
+      text-align: left;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+
+    .comparison th {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 400;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .comparison td.format {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--ink);
+      letter-spacing: 0.05em;
+    }
+    .comparison td.format.us { color: var(--accent); }
+    .comparison td p { margin: 0; font-size: 0.9rem; color: var(--ink-soft); }
+
+    /* ---------- Roadmap ---------- */
+
+    .roadmap {
+      display: grid;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .roadmap-item {
+      display: grid;
+      grid-template-columns: 8ch 1fr;
+      gap: 1.5rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--paper-darker);
+      align-items: baseline;
+    }
+    .roadmap-item:last-child { border-bottom: none; }
+
+    .roadmap-version {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    .roadmap-version.future { color: var(--muted); }
+
+    .roadmap-body h3 { font-size: 1rem; margin-bottom: 0.25rem; font-style: italic; }
+    .roadmap-body p { margin: 0; font-size: 0.9rem; color: var(--ink-soft); }
+
+    /* ---------- Get involved ---------- */
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .link-card {
+      display: block;
+      padding: 1.5rem 1.25rem;
+      border: 1px solid var(--rule);
+      color: var(--ink);
+      transition: all 0.18s ease;
+      border-bottom: 1px solid var(--rule);
+    }
+    .link-card:hover { background: var(--ink); color: var(--paper); opacity: 1; }
+    .link-card:hover .link-arrow { transform: translateX(3px); }
+    .link-card:hover .link-desc { color: var(--paper-shadow); }
+
+    .link-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .link-title { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; }
+    .link-arrow { transition: transform 0.18s ease; }
+    .link-desc { font-size: 0.9rem; color: var(--ink-soft); font-family: var(--serif); }
+
+    /* ---------- Footer ---------- */
+
+    footer {
+      padding: 4rem 0 3rem;
+      border-top: 1px solid var(--rule);
+      margin-top: 4rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .footer-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-meta { display: flex; flex-direction: column; gap: 0.4rem; }
+    .footer-meta a { color: var(--muted); border-bottom: 1px solid transparent; }
+    .footer-meta a:hover { color: var(--ink); border-bottom-color: currentColor; }
+
+    .footer-author {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 0.85rem;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--muted);
+    }
+    .footer-author a { color: var(--ink); border-bottom: 1px solid var(--muted-soft); }
+
+    /* ---------- Reduced motion ---------- */
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      html { scroll-behavior: auto; }
+    }
+
+    /* ---------- Small screens ---------- */
+
+    @media (max-width: 540px) {
+      nav.site { gap: 1rem; font-size: 0.65rem; }
+      .anatomy-row { grid-template-columns: 1fr; gap: 0.25rem; }
+      .roadmap-item { grid-template-columns: 1fr; gap: 0.4rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="site">
+    <a class="mark" href="/">
+      <img src="/icons/icon.svg" class="mark-icon" alt="PortableWeb logo">
+      <span>PortableWeb</span>
+    </a>
+    <nav class="site">
+      <a href="#what">What</a>
+      <a href="#anatomy">Anatomy</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="https://github.com/portableweb">GitHub</a>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="status">Spec v0.1 &middot; Draft</div>
+    <h1 class="hero-title">
+      Interactive documents,<br>
+      built to <span class="accent">last</span>.
+    </h1>
+    <p class="hero-lede">
+      PortableWeb is an open file format for self-contained, sandboxed,
+      interactive documents. Like PDF, but interactive. Like a webpage,
+      but a file you own.
+    </p>
+    <div class="cta-row">
+      <a class="btn primary" href="https://github.com/portableweb">
+        Read the spec &rarr;
+      </a>
+      <a class="btn" href="#anatomy">See what&rsquo;s inside</a>
+    </div>
+  </section>
+
+  <!-- What -->
+  <section class="block" id="what">
+    <p class="eyebrow">What it is</p>
+    <h2>A single file that opens like a document and behaves like a small, sandboxed web app.</h2>
+    <p>
+      A PortableWeb bundle (<code>.pweb</code>) packages HTML, CSS, JavaScript,
+      and media into one file. A compatible viewer opens it in its own window,
+      sandboxed from the host system, with no network access by default.
+    </p>
+    <p>
+      The format is designed so that <em>the document is the unit</em>. You can
+      save it, copy it, email it, archive it, or send it across an office network
+      with AirDrop. It works offline. It doesn&rsquo;t expire when a CDN goes dark.
+      It doesn&rsquo;t need a server. It doesn&rsquo;t need a subscription.
+    </p>
+    <p>
+      Each spec version freezes a stable subset of web platform features, so a
+      bundle built against v1.0 will render correctly in any v1.0-compatible viewer,
+      forever &mdash; the same archival promise PDF/A makes for static documents, applied
+      to interactive ones.
+    </p>
+  </section>
+
+  <!-- Anatomy -->
+  <section class="block" id="anatomy">
+    <p class="eyebrow">Anatomy of a bundle</p>
+    <h2>Inside, it is plain. Three required files in a ZIP.</h2>
+    <p>
+      You can rename any <code>.pweb</code> file to <code>.zip</code> and unpack
+      it with any tool. There is no proprietary container, no hidden state, no
+      DRM. The format&rsquo;s strength is in its simplicity and its discipline, not in
+      its complexity.
+    </p>
+
+    <div class="anatomy" role="figure" aria-label="File structure inside a .pweb bundle">
+      <div class="anatomy-row header">
+        <span class="filename">Path</span>
+        <span class="desc">Role</span>
+      </div>
+      <div class="anatomy-row">
+        <span class="filename">mimetype <span class="req">&middot; required</span></span>
+        <span class="desc">First file in the archive, uncompressed. Identifies the format as <code>application/vnd.portableweb+zip</code>.</span>
+      </div>
+      <div class="anatomy-row">
+        <span class="filename">manifest.json <span class="req">&middot; required</span></span>
+        <span class="desc">Metadata: id, version, title, entry point, declared permissions, rights.</span>
+      </div>
+      <div class="anatomy-row">
+        <span class="filename">index.html <span class="req">&middot; required</span></span>
+        <span class="desc">Entry HTML the viewer loads first. May reference any other file in the bundle.</span>
+      </div>
+      <div class="anatomy-row">
+        <span class="filename">assets/</span>
+        <span class="desc">Recommended: images, icons, fonts, bundled media.</span>
+      </div>
+      <div class="anatomy-row">
+        <span class="filename">scripts/, styles/</span>
+        <span class="desc">Recommended: JavaScript modules and stylesheets.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pillars -->
+  <section class="block">
+    <p class="eyebrow">Design principles</p>
+    <h2>Self-contained, sandboxed, archival, owned.</h2>
+    <div class="pillars">
+      <div class="pillar">
+        <h3>Self-contained</h3>
+        <p>A bundle carries everything it needs. No CDN dependency. No broken script tags in five years. No surprise network calls. Bundles are the unit of preservation.</p>
+      </div>
+      <div class="pillar">
+        <h3>Sandboxed</h3>
+        <p>No filesystem access, no surveillance APIs, network off by default. Storage scoped per bundle. Permissions declared upfront in the manifest, enforced by the viewer.</p>
+      </div>
+      <div class="pillar">
+        <h3>Archival</h3>
+        <p>Each spec version freezes a stable subset of web features. A v1.0 bundle renders identically in any v1.0 viewer, indefinitely. New features ship in v2.0; old bundles don&rsquo;t break.</p>
+      </div>
+      <div class="pillar">
+        <h3>Owned</h3>
+        <p>A bundle is a file. No host, no account, no subscription, no platform. You can copy it, archive it, mail it, or seal it in a time capsule. It belongs to whoever holds it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Use cases -->
+  <section class="block">
+    <p class="eyebrow">What it&rsquo;s for</p>
+    <h2>Anywhere interactivity should outlive its hosting.</h2>
+    <div class="use-cases">
+      <div class="use-case">
+        <div class="num">01</div>
+        <h3>Interactive presentations</h3>
+        <p>Slide decks with real interactivity, sent as a file. The natural successor to PDF for anything more than text.</p>
+      </div>
+      <div class="use-case">
+        <div class="num">02</div>
+        <h3>AI-generated artifacts</h3>
+        <p>A real home for the millions of interactive things that AI tools create. Stop deploying ephemera; start saving artifacts.</p>
+      </div>
+      <div class="use-case">
+        <div class="num">03</div>
+        <h3>Educational explainers</h3>
+        <p>Interactive lessons that work offline, without a server, on any device &mdash; and still work next year, and the year after.</p>
+      </div>
+      <div class="use-case">
+        <div class="num">04</div>
+        <h3>Personal tools</h3>
+        <p>Journals, calculators, planners, trackers. Tools you keep as files instead of renting as subscriptions.</p>
+      </div>
+      <div class="use-case">
+        <div class="num">05</div>
+        <h3>Scientific artifacts</h3>
+        <p>Reproducible figures, interactive supplements, simulations that stay reproducible across decades.</p>
+      </div>
+      <div class="use-case">
+        <div class="num">06</div>
+        <h3>Archival of interactive work</h3>
+        <p>For libraries, museums, journals, and individuals who need interactive content to survive past the lifespan of any host.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison -->
+  <section class="block">
+    <p class="eyebrow">How it differs</p>
+    <h2>Sitting between the static document and the live web app.</h2>
+    <div class="comparison">
+      <table>
+        <thead>
+          <tr>
+            <th>Format</th>
+            <th>Interactive?</th>
+            <th>Offline?</th>
+            <th>Self-contained?</th>
+            <th>Archival promise?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="format">PDF</td>
+            <td><p>Limited</p></td>
+            <td><p>Yes</p></td>
+            <td><p>Yes</p></td>
+            <td><p>PDF/A</p></td>
+          </tr>
+          <tr>
+            <td class="format">Webpage / URL</td>
+            <td><p>Yes</p></td>
+            <td><p>No</p></td>
+            <td><p>No</p></td>
+            <td><p>Link rot</p></td>
+          </tr>
+          <tr>
+            <td class="format">PWA</td>
+            <td><p>Yes</p></td>
+            <td><p>After install</p></td>
+            <td><p>No</p></td>
+            <td><p>No</p></td>
+          </tr>
+          <tr>
+            <td class="format">EPUB</td>
+            <td><p>Partial</p></td>
+            <td><p>Yes</p></td>
+            <td><p>Yes</p></td>
+            <td><p>For books</p></td>
+          </tr>
+          <tr>
+            <td class="format us">.pweb</td>
+            <td><p>Yes, fully</p></td>
+            <td><p>Always</p></td>
+            <td><p>Yes</p></td>
+            <td><p>By design</p></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Roadmap -->
+  <section class="block" id="roadmap">
+    <p class="eyebrow">Roadmap</p>
+    <h2>A long game. The spec lasts; we don&rsquo;t rush.</h2>
+    <div class="roadmap">
+      <div class="roadmap-item">
+        <div class="roadmap-version">v0.1</div>
+        <div class="roadmap-body">
+          <h3>Container &amp; manifest <em>(here today)</em></h3>
+          <p>The ZIP layout, the mimetype convention, the manifest schema, the first example bundle. Specs and the <code>hello.pweb</code> bundle are public on GitHub.</p>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-version future">v0.2</div>
+        <div class="roadmap-body">
+          <h3>Sandbox and runtime profile</h3>
+          <p>Formal sandbox spec. The frozen subset of HTML/CSS/JS allowed in v1.0 bundles. First reference viewer (cross-platform).</p>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-version future">v0.3 &ndash; 0.9</div>
+        <div class="roadmap-body">
+          <h3>Iteration with real users</h3>
+          <p>CLI validator, mobile viewers, AI tool integrations. Specs evolve based on what people actually build.</p>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-version future">v1.0</div>
+        <div class="roadmap-body">
+          <h3>Stable spec</h3>
+          <p>From v1.0 forward, bundles render correctly in any v1.0-compatible viewer, forever. New features ship in v1.x and v2.x without breaking old bundles.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Get involved -->
+  <section class="block">
+    <p class="eyebrow">Get involved</p>
+    <h2>The spec is open. The work is just beginning.</h2>
+    <p>
+      PortableWeb is a small project with large ambitions. If any of this matters
+      to you &mdash; as an engineer, an educator, an archivist, a designer, a researcher,
+      a writer &mdash; there&rsquo;s a place for you in it.
+    </p>
+    <div class="links-grid">
+      <a class="link-card" href="https://github.com/portableweb">
+        <div class="link-card-top">
+          <span class="link-title">Spec on GitHub</span>
+          <span class="link-arrow" aria-hidden="true">&rarr;</span>
+        </div>
+        <p class="link-desc">Read the v0.1 spec, browse the examples, open issues, send PRs.</p>
+      </a>
+      <a class="link-card" href="/app/">
+        <div class="link-card-top">
+          <span class="link-title">Open the viewer</span>
+          <span class="link-arrow" aria-hidden="true">&rarr;</span>
+        </div>
+        <p class="link-desc">Try the browser-based PWA viewer. Open, validate, or pack .pweb bundles — no install required.</p>
+      </a>
+      <a class="link-card" href="https://github.com/portableweb/portableweb/discussions">
+        <div class="link-card-top">
+          <span class="link-title">Discuss</span>
+          <span class="link-arrow" aria-hidden="true">&rarr;</span>
+        </div>
+        <p class="link-desc">Ideas, questions, design conversations. The earlier you join, the more your voice shapes things.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-meta">
+        <span>PortableWeb &middot; v0.1 Draft &middot; 2026</span>
+        <span>Spec licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0</a> &middot; Code licensed <a href="https://opensource.org/licenses/MIT">MIT</a></span>
+      </div>
+      <div class="footer-author">
+        Created by <a href="https://github.com/omscse">Omprakash Selvaraj</a>.
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>

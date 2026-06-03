@@ -1,0 +1,48 @@
+{
+  "name": "PortableWeb",
+  "short_name": "PWeb",
+  "description": "Open, view, pack, and validate .pweb interactive document bundles.",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4ede0",
+  "theme_color": "#1a1714",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/app/",
+      "accept": {
+        "application/vnd.portableweb+zip": [".pweb"]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "/app/",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "file",
+          "accept": ["application/vnd.portableweb+zip", ".pweb"]
+        }
+      ]
+    }
+  },
+  "categories": ["productivity", "utilities"],
+  "screenshots": []
+}
