@@ -16,16 +16,17 @@
 
   <style>
     :root {
-      --ink:           #1a1714;
-      --ink-soft:      #3a342d;
-      --paper:         #f4ede0;
-      --paper-shadow:  #ebe2d0;
-      --paper-darker:  #e1d6c1;
-      --accent:        #b8390e;
-      --accent-soft:   #d8754a;
-      --rule:          #1a1714;
-      --muted:         #756b5e;
-      --muted-soft:    #9a907f;
+      --ink:           #0f0f1a;
+      --ink-soft:      #2d2d50;
+      --paper:         #f7f8ff;
+      --paper-shadow:  #edeeff;
+      --paper-darker:  #e2e4f8;
+      --accent:        #7c3aed;
+      --accent-soft:   #9f67f5;
+      --rule:          rgba(15,15,26,0.18);
+      --muted:         #6565a0;
+      --muted-soft:    #9090b8;
+      --gradient:      linear-gradient(135deg, #7c3aed 0%, #2563eb 46%, #20d6d2 100%);
       --serif:         ui-serif, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", "Droid Serif", Times, "Source Serif Pro", serif;
       --sans:          ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
       --mono:          ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
@@ -33,16 +34,16 @@
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --ink:           #f0e6d2;
-        --ink-soft:      #cfc4ad;
-        --paper:         #14110e;
-        --paper-shadow:  #1f1a14;
-        --paper-darker:  #2a241c;
-        --accent:        #e8835a;
-        --accent-soft:   #b8390e;
-        --rule:          #f0e6d2;
-        --muted:         #8a8170;
-        --muted-soft:    #5a5246;
+        --ink:           #e8e8ff;
+        --ink-soft:      #b0b0d8;
+        --paper:         #08080f;
+        --paper-shadow:  #0f0f1e;
+        --paper-darker:  #181828;
+        --accent:        #a78bfa;
+        --accent-soft:   #7c3aed;
+        --rule:          rgba(232,232,255,0.15);
+        --muted:         #7070a8;
+        --muted-soft:    #454570;
       }
     }
 
@@ -178,7 +179,12 @@
       max-width: 12ch;
     }
 
-    h1.hero-title .accent { color: var(--accent); }
+    h1.hero-title .accent {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
     .hero-lede {
       font-size: clamp(1.15rem, 2.2vw, 1.4rem);
@@ -212,8 +218,12 @@
     }
     .btn:hover { background: var(--ink); color: var(--paper); opacity: 1; }
 
-    .btn.primary { background: var(--ink); color: var(--paper); }
-    .btn.primary:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+    .btn.primary {
+      background: var(--gradient);
+      border-color: transparent;
+      color: #fff;
+    }
+    .btn.primary:hover { opacity: 0.88; color: #fff; }
 
     /* ---------- Section primitives ---------- */
 
@@ -236,8 +246,9 @@
 
     .eyebrow::before {
       content: "";
-      width: 24px; height: 1px;
-      background: var(--muted);
+      width: 24px; height: 2px;
+      background: var(--gradient);
+      border-radius: 2px;
     }
 
     h2 {
@@ -314,8 +325,9 @@
       content: "";
       display: block;
       width: 36px;
-      height: 1px;
-      background: var(--accent);
+      height: 2px;
+      background: var(--gradient);
+      border-radius: 2px;
       margin-bottom: 1rem;
     }
 
