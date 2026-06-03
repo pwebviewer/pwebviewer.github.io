@@ -89,6 +89,29 @@ Caveats:
 - Requires a user permission re-prompt each browser session
 - Handle goes stale if the file is moved or deleted
 
+### Domain categorisation — submit to enterprise web filters
+
+New domains default to "Uncategorized" in enterprise web filters, which most
+corporate firewalls block. Submit portableweb.org to each vendor's portal and
+request the category **Technology / Information Technology / Open Source Software**.
+
+| Vendor | Submission URL |
+|---|---|
+| Cisco Umbrella / Talos | https://investigate.umbrella.com |
+| Palo Alto Networks | https://urlfiltering.paloaltonetworks.com |
+| Zscaler | https://zscaler.com/tools/url-categorization |
+| Fortinet FortiGuard | https://fortiguard.com/webfilter |
+| Symantec / Broadcom | https://sitereview.symantec.com |
+| Barracuda | https://barracudacentral.org/lookups |
+| McAfee / Trellix | https://trustedsource.org |
+| Webroot BrightCloud | https://brightcloud.com/tools/url-ip-lookup |
+| IBM X-Force | https://exchange.xforce.ibmcloud.com |
+| Trend Micro | https://sitesafety.trendmicro.com |
+| Google Safe Browsing | https://transparencyreport.google.com/safe-browsing/search |
+
+Priority: **Cisco and Palo Alto** are the most common in enterprise environments.
+Most vendors review within 24–72 hours.
+
 ## License
 
 MIT — see [portableweb/spec](https://github.com/portableweb/spec) for the CC-BY 4.0 spec license.
