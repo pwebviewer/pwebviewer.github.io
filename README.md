@@ -1,0 +1,76 @@
+# @portableweb/web
+
+Node.js server powering **portableweb.org** — marketing homepage at `/` and browser-based PWA viewer at `/app/`.
+
+## What's inside
+
+```
+public/
+  index.html        # portableweb.org marketing homepage
+  icons/icon.svg    # brand icon (used by both pages and the PWA manifest)
+  app/
+    index.html      # PWA app shell (dashboard + viewer, all JS/CSS inline)
+    manifest.json   # Web App Manifest — file_handlers for .pweb, offline icons
+    sw.js           # Service Worker — pre-caches app shell for offline use
+server.js           # Express — static files + JSZip route + SPA fallback
+```
+
+## Getting started
+
+```bash
+npm install
+npm start          # → http://localhost:3000
+```
+
+Set `PORT` env var to change the port.
+
+## Routes
+
+| Path | What it serves |
+|---|---|
+| `/` | Marketing homepage |
+| `/app/` | PWA viewer app |
+| `/app/jszip.min.js` | JSZip 3.x (served from node_modules, cached by SW) |
+| `/icons/icon.svg` | Brand icon |
+
+Any `/app/*` path not matched by a static file falls back to the app shell (SPA routing).
+
+## PWA features
+
+**File Handling API** — when the PWA is installed in Chrome or Edge on desktop, opening a `.pweb` file from the OS launches the app directly. The app receives the file via `window.launchQueue` and renders it immediately.
+
+**Drag-and-drop** — drop a `.pweb` file anywhere on the window to open it.
+
+**File picker** — the "Choose .pweb file" button opens a native file picker. On mobile, this opens the system file browser.
+
+**Offline** — the service worker pre-caches the app shell (HTML, manifest, SW, JSZip, icon) on install. The viewer works fully offline once cached.
+
+**Share Target** — the manifest declares a share target so `.pweb` files can be shared to the app from the OS share sheet (Android / desktop).
+
+## Developer tools (dashboard)
+
+| Tool | What it does |
+|---|---|
+| **Open** | Pick and render a `.pweb` bundle in the viewer |
+| **Unpack** | Rename `.pweb` → `.zip` and download for inspection/editing |
+| **Pack** | Select a folder → build a spec-compliant `.pweb` (mimetype first, STORE compression) |
+| **Validate** | Run 12 spec checks against a `.pweb` and show a pass/fail report |
+| **New Project** | Fill a short form → download a ready-to-edit starter `.pweb` |
+
+## Bundle rendering (v0.1 notes)
+
+Bundles are opened client-side with JSZip. Each file is converted to a Blob URL and the entry HTML has its `src`/`href`/`url()` attributes rewritten before loading into a sandboxed `<iframe>`.
+
+The iframe runs with `sandbox="allow-scripts allow-forms allow-pointer-lock allow-popups allow-modals allow-downloads"` — JavaScript works, but the bundle cannot access the parent page's origin or storage. Bundle-level `localStorage`/`IndexedDB` is not available in this viewer tier; that requires the native Tauri viewer (`portableweb/viewer`) or a future Service Worker–based origin-isolation approach.
+
+## Related packages
+
+| Repo | Purpose |
+|---|---|
+| [`portableweb/spec`](https://github.com/portableweb/spec) | v0.1 spec, `hello.pweb` example, container and manifest docs |
+| [`portableweb/cli`](https://github.com/portableweb/cli) | `pweb` CLI — `pack`, `validate`, `init` |
+| [`portableweb/viewer`](https://github.com/portableweb/viewer) | Native desktop viewer (Tauri) with full sandbox and `pweb://` protocol |
+
+## License
+
+MIT — see [portableweb/spec](https://github.com/portableweb/spec) for the CC-BY 4.0 spec license.
