@@ -3,7 +3,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const PUBLIC = path.join(__dirname, 'public');
+const PUBLIC = path.join(__dirname, 'docs');
 const PROD = process.env.NODE_ENV === 'production';
 
 // Force HTTPS in production (Cloud Run sets X-Forwarded-Proto)

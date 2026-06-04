@@ -1,36 +1,24 @@
-name: Deploy to GitHub Pages
+name: Sync app 404 fallback
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'docs/app/index.html'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Create SPA 404 fallback
-        run: cp public/app/index.html public/app/404.html
-
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./public
-
-      - uses: actions/deploy-pages@v4
-        id: deployment
+      - run: cp docs/app/index.html docs/app/404.html
+      - name: Commit if changed
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add docs/app/404.html
+          git diff --staged --quiet || git commit -m "chore: sync app/404.html from index.html [skip ci]"
+          git diff HEAD~1..HEAD --quiet || git push
