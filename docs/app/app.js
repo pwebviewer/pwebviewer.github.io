@@ -213,10 +213,26 @@ const App = (() => {
   async function doUnpack() {
     const file = await pickFile('.pweb,application/vnd.portableweb+zip');
     if (!file) return;
-    const bytes = await file.arrayBuffer();
-    const blob = new Blob([bytes], { type: 'application/zip' });
-    downloadBlob(blob, file.name.replace(/\.pweb$/, '.zip'));
-    showToast('Saved as ' + file.name.replace(/\.pweb$/, '.zip'));
+    showLoading('Unpacking…');
+    try {
+      const bytes = await file.arrayBuffer();
+      const srcZip = await JSZip.loadAsync(bytes);
+      const outZip = new JSZip();
+      const tasks = [];
+      srcZip.forEach((relPath, entry) => {
+        if (!entry.dir && relPath !== 'mimetype') {
+          tasks.push(entry.async('uint8array').then(data => outZip.file(relPath, data)));
+        }
+      });
+      await Promise.all(tasks);
+      const ab = await outZip.generateAsync({ type: 'arraybuffer' });
+      const blob = new Blob([ab], { type: 'application/zip' });
+      const outName = file.name.replace(/\.pweb$/, '.zip');
+      downloadBlob(blob, outName);
+      showToast('Saved as ' + outName);
+    } finally {
+      hideLoading();
+    }
   }
 
   function promptForPackManifest() {
