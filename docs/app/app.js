@@ -589,7 +589,7 @@ pre code {
       <h2>Get started</h2>
       <p>Edit <code>index.html</code> and <code>style.css</code> to build your interactive document.</p>
       <p><strong>To pack into a .pweb:</strong> open the
-         <a href="https://portableweb.org/app/" target="_blank" rel="noopener">PortableWeb viewer</a>,
+         <a href="https://portableweb.github.io/app/" target="_blank" rel="noopener">PortableWeb viewer</a>,
          click <strong>Pack</strong>, and select this project folder.
          (Tip: dragging a folder into the viewer doesn&rsquo;t work &mdash; use the Pack button.)</p>
       <p><strong>Or use the CLI:</strong></p>
